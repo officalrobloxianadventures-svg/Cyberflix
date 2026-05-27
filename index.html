@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" href="data:,">
+<title>RRC Netflix + AI</title>
+
+<style>
+:root{
+  --bg:#080808;
+  --panel:#121212;
+  --panel-2:#1c1c1c;
+  --red:#e50914;
+  --red-dark:#8b0008;
+  --text:#ffffff;
+  --muted:#b8b8b8;
+  --border:rgba(255,255,255,.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    radial-gradient(circle at 20% 10%,rgba(229,9,20,.32),transparent 28%),
+    radial-gradient(circle at 80% 0,rgba(255,255,255,.12),transparent 24%),
+    linear-gradient(135deg,#090909,#161616 45%,#30070a);
+  color:var(--text);
+}
+button,input,textarea{font:inherit}
+.topbar{
+  display:flex;
+  gap:10px;
+  padding:14px 16px;
+  background:rgba(20,20,20,.94);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:10;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.authPage{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:20px;
+}
+.authBox{
+  width:min(94vw,420px);
+  background:rgba(12,12,12,.96);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:22px;
+  display:grid;
+  gap:12px;
+}
+.authBox h1{margin:0;color:var(--red)}
+.authRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.authRow button{flex:1}
+.hidden{display:none!important}
+.logo{
+  font-size:30px;
+  font-weight:900;
+  color:var(--red);
+  margin-right:auto;
+  letter-spacing:0;
+}
+.navBtn,.actionBtn,.dangerBtn{
+  padding:10px 14px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#151515;
+  color:white;
+  cursor:pointer;
+  min-height:42px;
+}
+.navBtn:hover,.actionBtn:hover{background:#252525}
+.actionBtn{background:var(--red);border-color:var(--red)}
+.actionBtn:hover{background:#ff1521}
+.dangerBtn{background:#3a1010;border-color:#772020}
+.toggleBtn[data-on="true"]{background:#0d4d2a;border-color:#20a464}
+.toggleBtn[data-on="false"]{background:#421315;border-color:#8f252a}
+#searchInput,.field,textarea{
+  padding:11px 12px;
+  border:none;
+  border-radius:8px;
+  background:#f4f4f4;
+  color:#111;
+  min-height:42px;
+}
+#searchInput{width:min(260px,100%)}
+.pageTitle{
+  padding:20px 20px 0;
+  margin:0;
+  font-size:24px;
+}
+.movieContainer{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:18px;
+  padding:20px;
+}
+.movieCard{
+  background:rgba(15,15,15,.96);
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+  cursor:pointer;
+  min-width:0;
+}
+.movieCard video{
+  width:100%;
+  height:170px;
+  object-fit:cover;
+  display:block;
+  background:#050505;
+}
+.movieThumb{
+  height:170px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#1e1e1e,#3a1013);
+  color:#f1f1f1;
+  font-size:44px;
+  font-weight:900;
+}
+.movieInfo{
+  padding:12px;
+  display:grid;
+  gap:6px;
+}
+.movieName{
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+.movieMeta,.smallText{
+  color:var(--muted);
+  font-size:13px;
+}
+.empty{
+  color:var(--muted);
+  padding:20px;
+}
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.84);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+  padding:18px;
+}
+.popupBox{
+  background:#111;
+  border:1px solid var(--border);
+  padding:22px;
+  border-radius:8px;
+  width:min(94vw,520px);
+  display:grid;
+  gap:12px;
+}
+#homePage,#profilePage,#videoPlayer{display:none}
+.profileWrap{
+  display:flex;
+  gap:20px;
+  padding:20px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+#pfp{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  object-fit:cover;
+  cursor:pointer;
+  border:3px solid var(--red);
+}
+.profileMain{
+  display:grid;
+  gap:10px;
+  max-width:720px;
+  min-width:min(100%,320px);
+}
+[contenteditable]{
+  outline:1px solid transparent;
+  border-radius:6px;
+  padding:2px 4px;
+}
+[contenteditable]:focus{
+  outline-color:var(--red);
+  background:rgba(0,0,0,.32);
+}
+.toggleGrid{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.playerShell{
+  padding:20px;
+  display:grid;
+  gap:14px;
+}
+.playerTop{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+#playerWrap video{
+  width:100%;
+  max-height:70vh;
+  background:#000;
+  border-radius:8px;
+}
+.reactionBar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.commentsBox{
+  background:rgba(15,15,15,.95);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:14px;
+  display:grid;
+  gap:12px;
+}
+.comment{
+  border-top:1px solid var(--border);
+  padding-top:10px;
+}
+.comment:first-child{border-top:0;padding-top:0}
+.commentAuthor{font-weight:700}
+.uploadActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+#uploadStatus{min-height:20px;color:var(--muted)}
+@media (max-width:680px){
+  .logo{width:100%;font-size:26px}
+  .topbar{align-items:stretch}
+  .navBtn,.actionBtn,.dangerBtn,#searchInput{flex:1 1 auto}
+}
+</style>
+</head>
+
+<body>
+
+<section id="authPage" class="authPage">
+  <div class="authBox">
+    <h1>RRC Netflix</h1>
+    <div class="smallText">Login with your username and password. If you do not have one, create it here.</div>
+    <input id="authUsername" class="field" placeholder="Username">
+    <input id="authPassword" class="field" type="password" placeholder="Password">
+    <label class="smallText">
+      <input id="gmailPermission" type="checkbox" onchange="toggleGmailField()">
+      Add Gmail for forgot password recovery
+    </label>
+    <input id="authGmail" class="field hidden" type="email" placeholder="Gmail address">
+    <div id="authStatus" class="smallText"></div>
+    <div class="authRow">
+      <button class="actionBtn" onclick="loginAccount()">Login</button>
+      <button class="navBtn" onclick="createAccount()">Create Account</button>
+    </div>
+    <button class="navBtn" onclick="forgotPassword()">Forgot Password</button>
+  </div>
+</section>
+
+<div id="topbar" class="topbar hidden">
+  <div class="logo">RRC Netflix</div>
+  <button class="navBtn" onclick="goHome()">Home</button>
+  <button class="navBtn" onclick="openProfile()">Profile</button>
+  <button class="navBtn" onclick="openCreate()">Create</button>
+  <button class="navBtn" onclick="syncSupabaseNow()">Sync</button>
+  <button class="navBtn" onclick="resetAppData()">Reset</button>
+  <button class="navBtn" onclick="logoutAccount()">Logout</button>
+  <button class="navBtn" onclick="openPlus()">RRC Plus</button>
+  <button class="navBtn" onclick="openAIWebsite()">My AI</button>
+  <input id="searchInput" placeholder="Search movies or @username..." oninput="searchMovies()">
+</div>
+
+<main id="homePage">
+  <h2 class="pageTitle">Channels</h2>
+  <div id="channelList" class="movieContainer"></div>
+
+  <h2 class="pageTitle">Continue Watching</h2>
+  <div id="continueWatching" class="movieContainer"></div>
+
+  <h2 class="pageTitle">Movies</h2>
+  <div id="movieContainer" class="movieContainer"></div>
+</main>
+
+<main id="profilePage">
+  <div class="profileWrap">
+    <label for="pfpUpload" title="Change profile picture">
+      <img id="pfp" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='60' fill='%231f1f1f'/%3E%3Ccircle cx='60' cy='44' r='22' fill='%23e50914'/%3E%3Cpath d='M22 104c8-25 27-38 38-38s30 13 38 38' fill='%23e50914'/%3E%3C/svg%3E" alt="Profile picture">
+    </label>
+    <input hidden id="pfpUpload" type="file" accept="image/*">
+
+    <div class="profileMain">
+      <h1 id="nicknameText" contenteditable="true">Nickname</h1>
+      <h3 id="usernameText">@username</h3>
+      <div class="smallText">
+        Followers: <span id="followersCount">0</span> | Following: <span id="followingCount">0</span>
+      </div>
+      <div id="bioText" contenteditable="true" style="font-size:20px;">Edit your bio...</div>
+
+      <div class="toggleGrid">
+        <button id="globalToggleBtn" class="navBtn toggleBtn" onclick="toggleSetting('globalChannel')"></button>
+        <button id="commentsToggleBtn" class="navBtn toggleBtn" onclick="toggleSetting('globalComments')"></button>
+        <button id="likesToggleBtn" class="navBtn toggleBtn" onclick="toggleSetting('globalLikes')"></button>
+        <button id="dislikesToggleBtn" class="navBtn toggleBtn" onclick="toggleSetting('globalDislikes')"></button>
+      </div>
+      <div id="channelSaveStatus" class="smallText"></div>
+      <div class="smallText">Profile text saves when you click away.</div>
+    </div>
+  </div>
+
+  <h2 class="pageTitle">Your Videos</h2>
+  <div id="profileMovieList" class="movieContainer"></div>
+</main>
+
+<main id="videoPlayer">
+  <div class="playerShell">
+    <div class="playerTop">
+      <button class="navBtn" onclick="closePlayer()">Back</button>
+      <strong id="playerTitle"></strong>
+      <span id="playerOwner" class="smallText"></span>
+    </div>
+
+    <div id="playerWrap"></div>
+
+    <div class="reactionBar">
+      <button id="likeBtn" class="navBtn" onclick="voteMovie('like')">Like <span id="likeCount">0</span></button>
+      <button id="dislikeBtn" class="navBtn" onclick="voteMovie('dislike')">Dislike <span id="dislikeCount">0</span></button>
+    </div>
+
+    <section id="commentsSection" class="commentsBox">
+      <h3 style="margin:0;">Comments</h3>
+      <div id="commentList"></div>
+      <textarea id="commentInput" rows="3" placeholder="Write a comment..."></textarea>
+      <button class="actionBtn" onclick="addComment()">Post Comment</button>
+    </section>
+  </div>
+</main>
+
+<div class="popup" id="createPopup">
+  <div class="popupBox">
+    <h2 style="margin:0;">Upload Video</h2>
+    <input id="movieTitle" class="field" placeholder="Video title">
+    <label class="smallText">
+      <input id="moviePublic" type="checkbox" checked>
+      Make this video public
+    </label>
+    <input id="movieUpload" type="file" accept="video/*">
+    <div id="uploadStatus"></div>
+    <div class="uploadActions">
+      <button class="actionBtn" onclick="uploadSelectedMovie()">Upload</button>
+      <button class="navBtn" onclick="closeCreate()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="popup" id="recoveryPopup">
+  <div class="popupBox">
+    <h2 style="margin:0;">Password Reset Email</h2>
+    <div id="recoveryTo" class="smallText"></div>
+    <textarea id="recoveryMessage" rows="12" readonly></textarea>
+    <div class="uploadActions">
+      <button class="actionBtn" onclick="openGmailReset()">Open Gmail</button>
+      <button class="navBtn" onclick="closeRecovery()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+console.clear();
+window.addEventListener("error", e => {
+  e.preventDefault();
+  const status = document.getElementById("authStatus") || document.getElementById("channelSaveStatus");
+  if(status) status.innerText = "The app caught an error and kept running. Try Reset if something looks stuck.";
+});
+window.addEventListener("unhandledrejection", e => {
+  e.preventDefault();
+  const status = document.getElementById("authStatus") || document.getElementById("channelSaveStatus");
+  if(status) status.innerText = "The app caught a failed request and kept running.";
+});
+
+const SUPABASE_URL = "https://efgsnnqsfruswoelpmut.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmZ3NubnFzZnJ1c3dvZWxwbXV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMDc0OTMsImV4cCI6MjA5MjU4MzQ5M30.VxX8vdRH_IPxCI_g0h4-PNWQtXtJzKP1_QoueWywTaM";
+const VIDEO_BUCKET = "videos";
+const MAX_DATA_URL_FALLBACK_MB = 8;
+const DEFAULT_PFP = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='60' fill='%231f1f1f'/%3E%3Ccircle cx='60' cy='44' r='22' fill='%23e50914'/%3E%3Cpath d='M22 104c8-25 27-38 38-38s30 13 38 38' fill='%23e50914'/%3E%3C/svg%3E";
+
+let currentMovieId = null;
+let moviesCache = [];
+let moviesCloudReady = false;
+let profileCloudReady = false;
+let currentUser = localStorage.getItem("rrc_current_user") || "";
+let pendingRecoveryEmail = "";
+let pendingRecoverySubject = "";
+let pendingRecoveryBody = "";
+
+function readJSON(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return fallback;
+    const value = JSON.parse(raw);
+    return value == null ? fallback : value;
+  }catch(err){
+    localStorage.removeItem(key);
+    return fallback;
+  }
+}
+
+function writeJSON(key, value){
+  try{
+    localStorage.setItem(key, JSON.stringify(value));
+  }catch(err){
+    console.log(`${key} could not be saved locally.`);
+  }
+}
+
+const defaultProfile = {
+  nickname:"Nickname",
+  username:"@username",
+  bio:"Edit your bio...",
+  followers:0,
+  following:0,
+  globalChannel:false,
+  globalComments:true,
+  globalLikes:true,
+  globalDislikes:true,
+  pfp:DEFAULT_PFP
+};
+
+function accountKey(username){
+  return normalizeUsername(username).toLowerCase();
+}
+
+function profileKey(username = currentUser){
+  return `rrc_profile_${accountKey(username)}`;
+}
+
+function getAccounts(){
+  const accounts = readJSON("rrc_accounts", {});
+  return accounts && typeof accounts === "object" && !Array.isArray(accounts) ? accounts : {};
+}
+
+function saveAccounts(accounts){
+  writeJSON("rrc_accounts", accounts);
+}
+
+let profile = {
+  ...defaultProfile,
+  ...readJSON(currentUser ? profileKey(currentUser) : "rrc_profile", {})
+};
+
+if(!profile.pfp || !profile.pfp.startsWith("data:image/")){
+  profile.pfp = DEFAULT_PFP;
+  if(currentUser) writeJSON(profileKey(currentUser), profile);
+}
+
+function $(id){
+  return document.getElementById(id);
+}
+
+function toggleGmailField(){
+  $("authGmail").classList.toggle("hidden", !$("gmailPermission").checked);
+}
+
+function authInputUsername(){
+  return normalizeUsername($("authUsername").value);
+}
+
+function setAuthStatus(message){
+  $("authStatus").innerText = message;
+}
+
+function loadProfileForUser(username){
+  currentUser = accountKey(username);
+  const stored = readJSON(profileKey(currentUser), {});
+  profile = {
+    ...defaultProfile,
+    ...stored,
+    username:normalizeUsername(currentUser)
+  };
+  if(!profile.nickname || profile.nickname === "Nickname"){
+    profile.nickname = profile.username.replace(/^@/,"");
+  }
+  if(!profile.pfp || !profile.pfp.startsWith("data:image/")) profile.pfp = DEFAULT_PFP;
+  writeJSON(profileKey(currentUser), profile);
+}
+
+function showApp(){
+  $("authPage").classList.add("hidden");
+  $("topbar").classList.remove("hidden");
+  initProfile();
+  goHome();
+}
+
+function showAuth(){
+  $("authPage").classList.remove("hidden");
+  $("topbar").classList.add("hidden");
+  $("homePage").style.display = "none";
+  $("profilePage").style.display = "none";
+  $("videoPlayer").style.display = "none";
+}
+
+function createAccount(){
+  const username = authInputUsername();
+  const password = $("authPassword").value;
+  const wantsGmail = $("gmailPermission").checked;
+  const gmail = $("authGmail").value.trim();
+  if(username === "@username" || username.length < 3){
+    setAuthStatus("Enter a username first.");
+    return;
+  }
+  if(password.length < 4){
+    setAuthStatus("Password needs at least 4 characters.");
+    return;
+  }
+  if(wantsGmail && (!gmail.endsWith("@gmail.com") || gmail.length < 11)){
+    setAuthStatus("Enter a valid Gmail address or uncheck Gmail recovery.");
+    return;
+  }
+
+  const accounts = getAccounts();
+  const key = accountKey(username);
+  if(accounts[key]){
+    setAuthStatus("That username already exists. Login instead.");
+    return;
+  }
+
+  accounts[key] = {
+    username:normalizeUsername(username),
+    password,
+    gmail:wantsGmail ? gmail : "",
+    created_at:new Date().toISOString()
+  };
+  saveAccounts(accounts);
+  localStorage.setItem("rrc_current_user", key);
+  loadProfileForUser(key);
+  setAuthStatus("Account created.");
+  showApp();
+}
+
+function loginAccount(){
+  const username = authInputUsername();
+  const password = $("authPassword").value;
+  const accounts = getAccounts();
+  const key = accountKey(username);
+  if(!accounts[key]){
+    setAuthStatus("Username not found. Create an account first.");
+    return;
+  }
+  if(accounts[key].password !== password){
+    setAuthStatus("Wrong password.");
+    return;
+  }
+  localStorage.setItem("rrc_current_user", key);
+  loadProfileForUser(key);
+  showApp();
+}
+
+function forgotPassword(){
+  const username = authInputUsername();
+  const accounts = getAccounts();
+  const account = accounts[accountKey(username)];
+  if(!account){
+    setAuthStatus("Enter your username first.");
+    return;
+  }
+  if(!account.gmail){
+    setAuthStatus("No Gmail was added for this account.");
+    return;
+  }
+  pendingRecoveryEmail = account.gmail;
+  pendingRecoverySubject = "Reset your RRC Netflix password";
+  pendingRecoveryBody = buildRecoveryEmail();
+  $("recoveryTo").innerText = `To: ${account.gmail}`;
+  $("recoveryMessage").value = pendingRecoveryBody;
+  $("recoveryPopup").style.display = "flex";
+  setAuthStatus("Password reset email is ready.");
+}
+
+function buildRecoveryEmail(){
+  return `Hello,
+
+We received a request to reset the password for your account.
+
+If you made this request, click the link below to create a new password:
+
+Reset Password:
+Later because this is a test
+
+This link will expire in 24 hours for your security.
+
+If you did NOT request a password reset, you can safely ignore this email. Your account will remain secure, and no changes will be made.
+
+Thanks,
+Support Team`;
+}
+
+function openGmailReset(){
+  if(!pendingRecoveryEmail) return;
+  const url = "https://mail.google.com/mail/?view=cm&fs=1"
+    + `&to=${encodeURIComponent(pendingRecoveryEmail)}`
+    + `&su=${encodeURIComponent(pendingRecoverySubject)}`
+    + `&body=${encodeURIComponent(pendingRecoveryBody)}`;
+  window.open(url, "_blank");
+}
+
+function closeRecovery(){
+  $("recoveryPopup").style.display = "none";
+}
+
+function logoutAccount(){
+  localStorage.removeItem("rrc_current_user");
+  currentUser = "";
+  profile = {...defaultProfile};
+  $("authPassword").value = "";
+  showAuth();
+}
+
+async function saveProfile(){
+  profile.nickname = $("nicknameText").innerText.trim() || "Nickname";
+  profile.username = normalizeUsername(currentUser || profile.username);
+  profile.bio = $("bioText").innerText.trim() || "Edit your bio...";
+  writeJSON(profileKey(currentUser), profile);
+  initProfile();
+  await savePublicProfile();
+  await renderChannels();
+  renderMovies();
+}
+
+function normalizeUsername(value){
+  const clean = (value || "username").trim().replace(/\s+/g,"_");
+  return clean.startsWith("@") ? clean : "@" + clean;
+}
+
+function initProfile(){
+  $("nicknameText").innerText = profile.nickname;
+  $("usernameText").innerText = profile.username;
+  $("bioText").innerText = profile.bio;
+  $("pfp").src = profile.pfp;
+  $("followersCount").innerText = profile.followers || 0;
+  $("followingCount").innerText = profile.following || 0;
+  updateToggles();
+}
+
+$("nicknameText").addEventListener("blur", saveProfile);
+$("usernameText").addEventListener("blur", saveProfile);
+$("bioText").addEventListener("blur", saveProfile);
+
+$("pfpUpload").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    profile.pfp = ev.target.result;
+    writeJSON(profileKey(currentUser), profile);
+    initProfile();
+    savePublicProfile().then(renderChannels);
+  };
+  reader.readAsDataURL(file);
+});
+
+async function toggleSetting(key){
+  profile[key] = !profile[key];
+  writeJSON(profileKey(currentUser), profile);
+  updateToggles();
+  if(key === "globalChannel"){
+    $("channelSaveStatus").innerText = profile.globalChannel
+      ? "Public Channel is ON locally. Saving global channel to Supabase..."
+      : "Public Channel is OFF locally. Saving hide state to Supabase...";
+  }
+  await renderChannels();
+  await savePublicProfile();
+  await renderChannels();
+  renderMovieActions();
+  renderComments();
+}
+
+function updateToggles(){
+  setToggle("globalToggleBtn", profile.globalChannel, "Public Channel");
+  setToggle("commentsToggleBtn", profile.globalComments, "Global Comments");
+  setToggle("likesToggleBtn", profile.globalLikes, "Global Likes");
+  setToggle("dislikesToggleBtn", profile.globalDislikes, "Global Dislikes");
+}
+
+function setToggle(id, isOn, label){
+  const btn = $(id);
+  btn.dataset.on = String(!!isOn);
+  btn.innerText = `${label}: ${isOn ? "ON" : "OFF"}`;
+}
+
+async function supabaseFetch(path, options = {}){
+  const headers = {
+    apikey:SUPABASE_KEY,
+    Authorization:`Bearer ${SUPABASE_KEY}`,
+    ...(options.headers || {})
+  };
+  const res = await fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers
+  });
+  const text = await res.text();
+  let data = null;
+  try{
+    data = text ? JSON.parse(text) : null;
+  }catch(err){
+    data = text;
+  }
+  if(!res.ok){
+    const message = data && (data.message || data.error) ? (data.message || data.error) : (data || res.statusText);
+    throw new Error(message);
+  }
+  return data;
+}
+
+async function getMovies(forceCloud = false){
+  if(!moviesCloudReady && !forceCloud){
+    moviesCache = getLocalMovies();
+    return moviesCache;
+  }
+  try{
+    const remote = await supabaseFetch("/rest/v1/movies?select=*&order=created_at.desc");
+    const local = getLocalMovies();
+    moviesCache = [...local, ...remote.filter(m => !local.some(l => String(l.id) === String(m.id)))];
+    moviesCloudReady = true;
+  }catch(err){
+    moviesCloudReady = false;
+    moviesCache = getLocalMovies();
+  }
+  return moviesCache;
+}
+
+function profileForCloud(){
+  return {
+    username:profile.username,
+    nickname:profile.nickname,
+    bio:profile.bio,
+    pfp:profile.pfp,
+    followers:Number(profile.followers || 0),
+    following:Number(profile.following || 0),
+    global_channel:!!profile.globalChannel,
+    global_comments:!!profile.globalComments,
+    global_likes:!!profile.globalLikes,
+    global_dislikes:!!profile.globalDislikes,
+    updated_at:new Date().toISOString()
+  };
+}
+
+async function savePublicProfile(){
+  $("channelSaveStatus").innerText = "Saving channel to Supabase...";
+  try{
+    await supabaseFetch("/rest/v1/profiles?on_conflict=username", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        Prefer:"resolution=merge-duplicates,return=representation"
+      },
+      body:JSON.stringify(profileForCloud())
+    });
+    profileCloudReady = true;
+    $("channelSaveStatus").innerText = profile.globalChannel
+      ? "Global save ON: your public channel is saved to Supabase."
+      : "Global save OFF: your channel is hidden in Supabase.";
+    return true;
+  }catch(err){
+    profileCloudReady = false;
+    $("channelSaveStatus").innerText = "Global channel save failed. Create the Supabase profiles table and allow anon insert/update/select.";
+    return false;
+  }
+}
+
+async function getPublicProfiles(){
+  try{
+    const profiles = await supabaseFetch(
+      "/rest/v1/profiles?select=*&global_channel=eq.true&order=updated_at.desc"
+    );
+
+    profileCloudReady = true;
+    return profiles || [];
+  }catch(err){
+    profileCloudReady = false;
+    console.error("could not load public profiles", err);
+    return [];
+  }
+}
+
+function safeImageSrc(src){
+  if(!src) return DEFAULT_PFP;
+  if(src.startsWith("data:image/")) return src;
+  if(src.startsWith("blob:")) return src;
+  return DEFAULT_PFP;
+}
+
+function safeVideoSrc(src){
+  if(!src) return "";
+  if(src.startsWith("data:video/")) return src;
+  if(src.startsWith("blob:")) return src;
+  if(src.startsWith(SUPABASE_URL)) return src;
+  return "";
+}
+
+async function addMovie(movie){
+  try{
+    const rows = await supabaseFetch("/rest/v1/movies", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        Prefer:"return=representation"
+      },
+      body:JSON.stringify(movie)
+    });
+    moviesCloudReady = true;
+    return Array.isArray(rows) ? rows[0] : movie;
+  }catch(err){
+    saveLocalMovie(movie);
+    moviesCloudReady = false;
+    return movie;
+  }
+}
+
+async function patchMovie(id, patch){
+  const localMovie = moviesCache.find(m => String(m.id) === String(id));
+  if(localMovie) Object.assign(localMovie, patch);
+
+  if(String(id).startsWith("local-")){
+    replaceLocalMovie(id, localMovie);
+    return localMovie;
+  }
+
+  try{
+    const rows = await supabaseFetch(`/rest/v1/movies?id=eq.${encodeURIComponent(id)}`, {
+      method:"PATCH",
+      headers:{
+        "Content-Type":"application/json",
+        Prefer:"return=representation"
+      },
+      body:JSON.stringify(patch)
+    });
+    return Array.isArray(rows) ? rows[0] : localMovie;
+  }catch(err){
+    replaceLocalMovie(id, localMovie);
+    throw err;
+  }
+}
+
+function getLocalMovies(){
+  const movies = readJSON("rrc_local_movies", []);
+  if(!Array.isArray(movies)) return [];
+  return movies.filter(m => m && safeVideoSrc(m.url));
+}
+
+function saveLocalMovie(movie){
+  const movies = getLocalMovies();
+  movies.unshift(movie);
+  writeJSON("rrc_local_movies", movies);
+}
+
+function replaceLocalMovie(id, movie){
+  const movies = getLocalMovies();
+  const index = movies.findIndex(m => String(m.id) === String(id));
+  if(index >= 0) movies[index] = movie;
+  else if(movie) movies.unshift(movie);
+  writeJSON("rrc_local_movies", movies);
+}
+
+async function uploadSelectedMovie(){
+  const file = $("movieUpload").files[0];
+  if(!file){
+    setUploadStatus("Choose a video first.");
+    return;
+  }
+
+  const title = $("movieTitle").value.trim() || file.name.replace(/\.[^.]+$/,"");
+  const isPublic = $("moviePublic").checked;
+  setUploadStatus("Uploading video...");
+
+  try{
+    const url = await uploadVideoFile(file);
+    const movie = {
+      id:Date.now(),
+      name:title,
+      url,
+      likes:0,
+      dislikes:0,
+      comments:[],
+      owner:profile.username,
+      public:isPublic,
+      created_at:new Date().toISOString()
+    };
+
+    await addMovie(movie);
+    setUploadStatus("Upload complete.");
+    closeCreate();
+    await renderMovies();
+    await renderContinue();
+  }catch(err){
+    setUploadStatus(`Upload saved locally or failed: ${err.message}`);
+    await renderMovies();
+  }
+}
+
+async function uploadVideoFile(file){
+  try{
+    const path = makeStoragePath(file);
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${VIDEO_BUCKET}/${path}`, {
+      method:"PUT",
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:`Bearer ${SUPABASE_KEY}`,
+        "Content-Type":file.type || "video/mp4",
+        "x-upsert":"true"
+      },
+      body:file
+    });
+
+    if(!res.ok){
+      const text = await res.text();
+      throw new Error(text || "Storage upload failed");
+    }
+
+    return `${SUPABASE_URL}/storage/v1/object/public/${VIDEO_BUCKET}/${path}`;
+  }catch(err){
+    if(file.size > MAX_DATA_URL_FALLBACK_MB * 1024 * 1024){
+      throw new Error(`Supabase Storage failed. Create a public bucket named "${VIDEO_BUCKET}" or allow anon uploads.`);
+    }
+    setUploadStatus("Storage failed, saving small video as Data URL...");
+    return readFileAsDataURL(file);
+  }
+}
+
+function makeStoragePath(file){
+  const user = profile.username.replace(/^@/,"").replace(/[^a-z0-9_-]/gi,"_") || "user";
+  const safeName = file.name.replace(/[^a-z0-9._-]/gi,"_");
+  return `${user}/${Date.now()}-${safeName}`;
+}
+
+function readFileAsDataURL(file){
+  return new Promise((resolve,reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => resolve(ev.target.result);
+    reader.onerror = () => reject(new Error("Could not read video file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function setUploadStatus(message){
+  $("uploadStatus").innerText = message;
+}
+
+async function renderMovies(){
+  try{
+    const movies = await getMovies();
+    const query = $("searchInput").value.trim().toLowerCase();
+    const visibleMovies = movies.filter(m => {
+      const isPublic = m.public !== false || m.owner === profile.username;
+      const matchesSearch = !query || String(m.name || "").toLowerCase().includes(query) || String(m.owner || "").toLowerCase().includes(query);
+      return isPublic && matchesSearch;
+    });
+
+    $("movieContainer").innerHTML = visibleMovies.length
+      ? visibleMovies.map(movieCard).join("")
+      : `<div class="empty">No videos found.</div>`;
+
+    const myMovies = movies.filter(m => m.owner === profile.username);
+    $("profileMovieList").innerHTML = myMovies.length
+      ? myMovies.map(movieCard).join("")
+      : `<div class="empty">You have not uploaded videos yet.</div>`;
+  }catch(err){
+    $("movieContainer").innerHTML = `<div class="empty">Movies could not load. Local saved data was reset if it was broken.</div>`;
+    $("profileMovieList").innerHTML = `<div class="empty">Your videos could not load yet.</div>`;
+  }
+}
+
+function movieCard(m){
+  const safeName = escapeHTML(m.name || "Untitled video");
+  const safeOwner = escapeHTML(m.owner || "@unknown");
+  const firstLetter = escapeHTML((m.name || "R").trim().charAt(0).toUpperCase() || "R");
+  return `
+    <div class="movieCard" onclick="playMovie('${escapeAttribute(m.id)}')">
+      <div class="movieThumb">${firstLetter}</div>
+      <div class="movieInfo">
+        <div class="movieName">${safeName}</div>
+        <div class="movieMeta">${safeOwner} | ${Number(m.likes || 0)} likes | ${Number(m.dislikes || 0)} dislikes</div>
+      </div>
+    </div>
+  `;
+}
+
+async function searchMovies(){
+  const query = $("searchInput").value.trim();
+  if(query.length >= 2){
+    await getMovies(true);
+  }
+  renderMovies();
+  renderChannels();
+}
+
+async function syncSupabaseNow(){
+  setUploadStatus("");
+  moviesCloudReady = true;
+  profileCloudReady = true;
+  await getMovies(true);
+  await renderChannels();
+  await renderContinue();
+  await renderMovies();
+}
+
+async function playMovie(id){
+  const movies = await getMovies(false);
+  const movie = movies.find(x => String(x.id) === String(id));
+  if(!movie) return;
+
+  currentMovieId = movie.id;
+  localStorage.setItem("rrc_continue", String(movie.id));
+
+  $("homePage").style.display = "none";
+  $("profilePage").style.display = "none";
+  $("videoPlayer").style.display = "block";
+
+  $("playerTitle").innerText = movie.name || "Untitled video";
+  $("playerOwner").innerText = movie.owner || "";
+  const videoUrl = safeVideoSrc(movie.url);
+  $("playerWrap").innerHTML = videoUrl
+    ? `<video controls src="${escapeAttribute(videoUrl)}"></video>`
+    : `<div class="empty">This video URL is not available on this device.</div>`;
+
+  renderMovieActions();
+  renderComments();
+}
+
+function getCurrentMovie(){
+  return moviesCache.find(m => String(m.id) === String(currentMovieId));
+}
+
+function renderMovieActions(){
+  const movie = getCurrentMovie();
+  const showLikes = !!profile.globalLikes;
+  const showDislikes = !!profile.globalDislikes;
+
+  $("likeBtn").style.display = showLikes ? "inline-flex" : "none";
+  $("dislikeBtn").style.display = showDislikes ? "inline-flex" : "none";
+
+  $("likeCount").innerText = movie ? Number(movie.likes || 0) : 0;
+  $("dislikeCount").innerText = movie ? Number(movie.dislikes || 0) : 0;
+}
+
+async function voteMovie(type){
+  const movie = getCurrentMovie();
+  if(!movie) return;
+  if(type === "like" && !profile.globalLikes) return;
+  if(type === "dislike" && !profile.globalDislikes) return;
+
+  const voteKey = `rrc_vote_${movie.id}`;
+  const oldVote = localStorage.getItem(voteKey);
+  let likes = Number(movie.likes || 0);
+  let dislikes = Number(movie.dislikes || 0);
+
+  if(oldVote === type){
+    if(type === "like") likes = Math.max(0, likes - 1);
+    if(type === "dislike") dislikes = Math.max(0, dislikes - 1);
+    localStorage.removeItem(voteKey);
+  }else{
+    if(oldVote === "like") likes = Math.max(0, likes - 1);
+    if(oldVote === "dislike") dislikes = Math.max(0, dislikes - 1);
+    if(type === "like") likes += 1;
+    if(type === "dislike") dislikes += 1;
+    localStorage.setItem(voteKey, type);
+  }
+
+  movie.likes = likes;
+  movie.dislikes = dislikes;
+  renderMovieActions();
+  renderMovies();
+
+  try{
+    await patchMovie(movie.id, {likes, dislikes});
+  }catch(err){
+    replaceLocalMovie(movie.id, movie);
+  }
+}
+
+function renderComments(){
+  const movie = getCurrentMovie();
+  const commentsEnabled = !!profile.globalComments;
+  $("commentsSection").style.display = commentsEnabled ? "grid" : "none";
+  if(!commentsEnabled || !movie) return;
+
+  const comments = Array.isArray(movie.comments) ? movie.comments : [];
+  $("commentList").innerHTML = comments.length
+    ? comments.map(c => `
+      <div class="comment">
+        <div class="commentAuthor">${escapeHTML(c.author || "@guest")}</div>
+        <div>${escapeHTML(c.text || "")}</div>
+        <div class="smallText">${escapeHTML(c.created_at ? new Date(c.created_at).toLocaleString() : "")}</div>
+      </div>
+    `).join("")
+    : `<div class="smallText">No comments yet.</div>`;
+}
+
+async function addComment(){
+  const movie = getCurrentMovie();
+  const text = $("commentInput").value.trim();
+  if(!movie || !text || !profile.globalComments) return;
+
+  const comments = Array.isArray(movie.comments) ? [...movie.comments] : [];
+  comments.push({
+    author:profile.username,
+    text,
+    created_at:new Date().toISOString()
+  });
+
+  movie.comments = comments;
+  $("commentInput").value = "";
+  renderComments();
+
+  try{
+    await patchMovie(movie.id, {comments});
+  }catch(err){
+    replaceLocalMovie(movie.id, movie);
+  }
+}
+
+async function renderContinue(){
+  try{
+    const movies = await getMovies();
+    const id = localStorage.getItem("rrc_continue");
+    const movie = movies.find(x => String(x.id) === String(id));
+    $("continueWatching").innerHTML = movie ? movieCard(movie) : `<div class="empty">Nothing watched yet.</div>`;
+  }catch(err){
+    $("continueWatching").innerHTML = `<div class="empty">Nothing watched yet.</div>`;
+  }
+}
+
+// ===================== CHANNELS =====================
+
+async function renderChannels() {
+  const query = $("searchInput").value.trim().toLowerCase();
+
+  if (!query) {
+    $("channelList").innerHTML =
+      `<div class="empty">Search a username to find a public channel.</div>`;
+    return;
+  }
+
+  try {
+    const profiles = await getPublicProfiles();
+
+    const channels = profiles
+      .filter(p => p.global_channel === true)
+      .map(p => ({
+        username: (p.username || "").toLowerCase(),
+        nickname: p.nickname || "Channel",
+        bio: p.bio || "",
+        pfp: p.pfp || DEFAULT_PFP
+      }));
+
+    const matchedChannels = channels.filter(c => {
+      const username = c.username;
+      const noAt = username.replace("@", "");
+      const nickname = (c.nickname || "").toLowerCase();
+
+      return (
+        username.includes(query) ||
+        noAt.includes(query) ||
+        nickname.includes(query)
+      );
+    });
+
+    if (!matchedChannels.length) {
+      $("channelList").innerHTML =
+        `<div class="empty">No public channel found.</div>`;
+      return;
+    }
+
+    $("channelList").innerHTML = matchedChannels.map(c => `
+      <div class="movieCard" onclick="openProfile()">
+        <div class="movieInfo" style="text-align:center;">
+          <img src="${safeImageSrc(c.pfp)}"
+               style="width:76px;height:76px;border-radius:50%;object-fit:cover;">
+          <div class="movieName">${escapeHTML(c.nickname)}</div>
+          <div class="movieMeta">${escapeHTML(c.username)}</div>
+          <div class="smallText">${escapeHTML(c.bio)}</div>
+        </div>
+      </div>
+    `).join("");
+
+  } catch (err) {
+    console.error("Channel load error:", err);
+    $("channelList").innerHTML =
+      `<div class="empty">Failed to load channels.</div>`;
+  }
+}
+
+// ===================== NAVIGATION =====================
+
+function goHome() {
+  $("homePage").style.display = "block";
+  $("profilePage").style.display = "none";
+  $("videoPlayer").style.display = "none";
+
+  renderChannels();
+  renderContinue();
+  renderMovies();
+}
+
+function openProfile() {
+  $("homePage").style.display = "none";
+  $("profilePage").style.display = "block";
+  $("videoPlayer").style.display = "none";
+
+  renderMovies();
+}
+
+function closePlayer() {
+  goHome();
+}
+
+// ===================== CREATE POPUP =====================
+
+function openCreate() {
+  $("createPopup").style.display = "flex";
+  setUploadStatus("");
+}
+
+function closeCreate() {
+  $("createPopup").style.display = "none";
+
+  $("movieUpload").value = "";
+  $("movieTitle").value = "";
+  $("moviePublic").checked = true;
+
+  setUploadStatus("");
+}
+
+// ===================== EXTRA BUTTONS =====================
+
+function openPlus() {
+  alert("RRC Plus is ready for future features 🚀");
+}
+
+function openAIWebsite() {
+  alert("Add your AI website link here.");
+}
+
+// ===================== RESET =====================
+
+function resetAppData() {
+  const keys = Object.keys(localStorage);
+
+  keys.forEach(key => {
+    if (key.startsWith("rrc_")) localStorage.removeItem(key);
+  });
+
+  localStorage.removeItem("rrc_accounts");
+  localStorage.removeItem("rrc_current_user");
+  localStorage.removeItem("rrc_profile");
+  localStorage.removeItem("rrc_local_movies");
+  localStorage.removeItem("rrc_continue");
+
+  location.reload();
+}
+
+// ===================== SECURITY HELPERS =====================
+
+function escapeHTML(v) {
+  return String(v ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(v) {
+  return escapeHTML(v);
+}
+</script>
+
+</body>
+</html>
